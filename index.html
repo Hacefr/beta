@@ -19,12 +19,16 @@
 
     <!-- Viewport / Camera Window -->
     <div id="game-container">
+        <!-- Live World Coordinates HUD -->
+        <div id="coords-hud">X: 0 | Y: 0</div>
+
         <!-- Overlay Prompt for Pointer Lock -->
         <div id="lock-hint">Click anywhere to lock pointer inside game (ESC to unlock)</div>
 
-        <!-- The Large Explorable Map -->
+        <!-- Infinite Explorable Map Background -->
         <div id="map">
-            <div class="map-center-marker">+ MAP START</div>
+            <!-- Center Landmark at World (0,0) -->
+            <div id="center-marker">+ WORLD CENTER (0, 0)</div>
         </div>
     </div>
 
