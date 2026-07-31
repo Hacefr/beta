@@ -1,0 +1,80 @@
+/* Reset body and hide default browser cursor */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body, html {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    cursor: none; /* Hides default cursor */
+    background-color: #0d1117;
+    font-family: Arial, sans-serif;
+    user-select: none; /* Prevents text highlighting while dragging map */
+}
+
+/* Viewport Window */
+#game-container {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 3000px x 3000px Explorable Map Grid */
+#map {
+    width: 3000px;
+    height: 3000px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    /* Visual grid pattern */
+    background-size: 50px 50px;
+    background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-color: #161b22;
+    will-change: transform;
+}
+
+/* Temporary marker to give visual feedback on where (0,0) is */
+.map-center-marker {
+    position: absolute;
+    top: 1500px;
+    left: 1500px;
+    transform: translate(-50%, -50%);
+    color: #58a6ff;
+    font-weight: bold;
+    font-size: 1.2rem;
+    pointer-events: none;
+}
+
+/* Custom Cursor Styling */
+#custom-cursor {
+    width: 24px;
+    height: 24px;
+    border: 2px solid #58a6ff;
+    border-radius: 50%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none; /* Allows clicks to pass through to elements below */
+    z-index: 9999;
+    box-shadow: 0 0 10px rgba(88, 166, 255, 0.8);
+    transition: transform 0.05s linear;
+}
+
+/* Inner dot for custom cursor */
+#custom-cursor::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 4px;
+    height: 4px;
+    background-color: #58a6ff;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+}
