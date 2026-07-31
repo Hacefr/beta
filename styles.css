@@ -45,6 +45,52 @@ body, html {
     color: #ffd700;
 }
 
+/* Ability HUD Bar */
+#ability-hud {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(22, 27, 34, 0.9);
+    border: 1px solid rgba(88, 166, 255, 0.4);
+    padding: 8px 18px;
+    border-radius: 20px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.key-badge {
+    background: #58a6ff;
+    color: #0d1117;
+    font-weight: bold;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.ability-name {
+    color: #f0f6fc;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+#ability-status {
+    font-family: monospace;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+#ability-status.ready {
+    color: #2ed573;
+}
+
+#ability-status.cooldown {
+    color: #ff4757;
+}
+
 /* Enemy Selection Screen Modal */
 #enemy-select-modal {
     position: absolute;
@@ -171,141 +217,3 @@ body, html {
     top: 0;
     left: 0;
     background-size: 60px 60px;
-    background-image: 
-        linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-    background-color: #161b22;
-}
-
-/* Center Landmark at (0, 0) */
-#center-marker {
-    position: absolute;
-    transform: translate(-50%, -50%);
-    color: #58a6ff;
-    font-weight: bold;
-    font-size: 1rem;
-    pointer-events: none;
-    white-space: nowrap;
-    text-shadow: 0 0 8px rgba(88, 166, 255, 0.6);
-}
-
-/* Collectible Dots Styling */
-.dot {
-    position: absolute;
-    width: 12px;
-    height: 12px;
-    background-color: #ffd700;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    box-shadow: 0 0 10px #ffd700, 0 0 20px rgba(255, 215, 0, 0.6);
-    pointer-events: none;
-}
-
-.dot.collected {
-    display: none;
-}
-
-/* Enemies Styling */
-#enemy-element {
-    position: absolute;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-    z-index: 50;
-    display: none;
-}
-
-#enemy-element.type-1 {
-    background-color: #ff4757;
-    box-shadow: 0 0 15px #ff4757, 0 0 30px rgba(255, 71, 87, 0.6);
-}
-
-#enemy-element.type-2 {
-    background-color: #2ed573;
-    box-shadow: 0 0 15px #2ed573;
-}
-#enemy-element.type-2::after {
-    content: '🐚';
-    font-size: 18px;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
-
-#enemy-element.type-3 {
-    background-color: #ffa502;
-    box-shadow: 0 0 15px #ffa502;
-}
-
-#blast-radius {
-    position: absolute;
-    width: 0px;
-    height: 0px;
-    border-radius: 50%;
-    border: 2px dashed #ff4757;
-    background: rgba(255, 71, 87, 0.2);
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-    z-index: 40;
-    display: none;
-}
-
-/* Custom Cursor Styling */
-#custom-cursor {
-    width: 24px;
-    height: 24px;
-    border: 2px solid #58a6ff;
-    border-radius: 50%;
-    position: fixed;
-    top: 0;
-    left: 0;
-    pointer-events: none;
-    z-index: 9999;
-    box-shadow: 0 0 10px rgba(88, 166, 255, 0.8);
-    display: none; /* Shown only when game is active */
-}
-
-#custom-cursor::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 4px;
-    height: 4px;
-    background-color: #58a6ff;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-}
-
-/* Blue Direction Arrow Indicator */
-#direction-arrow {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 24px;
-    height: 24px;
-    pointer-events: none;
-    z-index: 9998;
-    opacity: 0;
-    transform-origin: center center;
-    filter: drop-shadow(0 0 6px #58a6ff);
-    transition: opacity 0.15s ease;
-}
-
-/* White Nearest-Dot Arrow Indicator */
-#nearest-dot-arrow {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 24px;
-    height: 24px;
-    pointer-events: none;
-    z-index: 9998;
-    opacity: 0;
-    transform-origin: center center;
-    filter: drop-shadow(0 0 8px #ffffff);
-    transition: opacity 0.15s ease;
-}
