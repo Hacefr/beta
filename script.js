@@ -1,21 +1,46 @@
 const cursor = document.getElementById('custom-cursor');
-const arrow = document.getElementById('direction-arrow');
+const blueArrow = document.getElementById('direction-arrow');
+const whiteArrow = document.getElementById('nearest-dot-arrow');
 const map = document.getElementById('map');
 const centerMarker = document.getElementById('center-marker');
 const container = document.getElementById('game-container');
 const lockHint = document.getElementById('lock-hint');
-const coordsHud = document.getElementById('coords-hud');
+const posText = document.getElementById('pos-text');
+const scoreText = document.getElementById('score-text');
+const dotsContainer = document.getElementById('dots-container');
 
 // Infinite Map World Offset Tracking
 let mapX = 0;
 let mapY = 0;
 
-// Update map background position and world landmark coordinates
+// ------------------------------------
+// 0. SPAWN 50 COLLECTIBLE DOTS
+// ------------------------------------
+const TOTAL_DOTS = 50;
+const dots = [];
+let collectedCount = 0;
+
+function spawnDots() {
+    for (let i = 0; i < TOTAL_DOTS; i++) {
+        // Random world coordinates between -2500 and +2500
+        const x = Math.round((Math.random() - 0.5) * 5000);
+        const y = Math.round((Math.random() - 0.5) * 5000);
+
+        const el = document.createElement('div');
+        el.className = 'dot';
+        dotsContainer.appendChild(el);
+
+        dots.push({ x, y, collected: false, element: el });
+    }
+}
+spawnDots();
+
+// Update map background position, landmarks, and dots
 function updateMapTransform() {
     // 1. Shift the infinite tiling grid infinitely
     map.style.backgroundPosition = `${mapX}px ${mapY}px`;
 
-    // 2. Position World Center (0, 0) marker relative to viewport center
+    // 2. Position World Center (0, 0) marker
     const originScreenX = window.innerWidth / 2 + mapX;
     const originScreenY = window.innerHeight / 2 + mapY;
     centerMarker.style.left = `${originScreenX}px`;
@@ -24,7 +49,7 @@ function updateMapTransform() {
     // 3. Update HUD World Coordinates
     const worldX = Math.round(-mapX);
     const worldY = Math.round(-mapY);
-    coordsHud.innerText = `X: ${worldX} | Y: ${worldY}`;
+    posText.innerText = `X: ${worldX} | Y: ${worldY}`;
 }
 updateMapTransform();
 
@@ -99,7 +124,7 @@ function updateCursor() {
     cursor.style.top = `${stiffY - 12}px`;
 
     // ------------------------------------
-    // DIRECTION ARROW INDICATOR
+    // BLUE DIRECTION ARROW (Real Mouse Trajectory)
     // ------------------------------------
     if (distance > 5) {
         const angle = Math.atan2(dy, dx) * (180 / Math.PI);
@@ -108,17 +133,83 @@ function updateCursor() {
         const arrowX = stiffX + Math.cos(rad) * 22;
         const arrowY = stiffY + Math.sin(rad) * 22;
 
-        arrow.style.left = `${arrowX - 12}px`;
-        arrow.style.top = `${arrowY - 12}px`;
-        arrow.style.transform = `rotate(${angle}deg)`;
-        arrow.style.opacity = '1';
+        blueArrow.style.left = `${arrowX - 12}px`;
+        blueArrow.style.top = `${arrowY - 12}px`;
+        blueArrow.style.transform = `rotate(${angle}deg)`;
+        blueArrow.style.opacity = '1';
     } else {
-        arrow.style.opacity = '0';
+        blueArrow.style.opacity = '0';
     }
 }
 
 // ------------------------------------
-// 2. INFINITE MAP PANNING (Drag)
+// 2. UPDATE DOT POSITIONS & WHITE ARROW
+// ------------------------------------
+function updateDotsAndNearestArrow() {
+    const originScreenX = window.innerWidth / 2 + mapX;
+    const originScreenY = window.innerHeight / 2 + mapY;
+
+    let nearestDot = null;
+    let minDistance = Infinity;
+
+    dots.forEach(dot => {
+        if (dot.collected) return;
+
+        // Compute dot's current screen position
+        const screenX = originScreenX + dot.x;
+        const screenY = originScreenY + dot.y;
+
+        // Render dot position
+        dot.element.style.left = `${screenX}px`;
+        dot.element.style.top = `${screenY}px`;
+
+        // Calculate distance from custom cursor to dot
+        const dist = Math.hypot(screenX - cursorX, screenY - cursorY);
+
+        // Check for collection collision (within 20px)
+        if (dist < 20) {
+            dot.collected = true;
+            dot.element.classList.add('collected');
+            collectedCount++;
+
+            if (collectedCount === TOTAL_DOTS) {
+                scoreText.innerText = 'ALL DOTS COLLECTED! 🏆';
+            } else {
+                scoreText.innerText = `Dots: ${collectedCount} / ${TOTAL_DOTS}`;
+            }
+        } else {
+            // Check if this dot is the nearest one
+            if (dist < minDistance) {
+                minDistance = dist;
+                nearestDot = { screenX, screenY, dist };
+            }
+        }
+    });
+
+    // ------------------------------------
+    // WHITE ARROW INDICATOR (Points to Nearest Dot)
+    // ------------------------------------
+    if (nearestDot) {
+        const dx = nearestDot.screenX - cursorX;
+        const dy = nearestDot.screenY - cursorY;
+        const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+        const rad = Math.atan2(dy, dx);
+
+        // Position white arrow slightly further out (36px) from custom cursor
+        const arrowX = cursorX + Math.cos(rad) * 36;
+        const arrowY = cursorY + Math.sin(rad) * 36;
+
+        whiteArrow.style.left = `${arrowX - 12}px`;
+        whiteArrow.style.top = `${arrowY - 12}px`;
+        whiteArrow.style.transform = `rotate(${angle}deg)`;
+        whiteArrow.style.opacity = '1';
+    } else {
+        whiteArrow.style.opacity = '0'; // Hide white arrow when all dots are collected
+    }
+}
+
+// ------------------------------------
+// 3. INFINITE MAP PANNING (Drag)
 // ------------------------------------
 let isDragging = false;
 let startX = 0;
@@ -148,7 +239,7 @@ window.addEventListener('mousemove', (e) => {
 });
 
 // ------------------------------------
-// 3. KEYBOARD PANNING (WASD / Arrows)
+// 4. KEYBOARD PANNING (WASD / Arrows)
 // ------------------------------------
 const keysPressed = {};
 const keyPanSpeed = 8;
@@ -166,16 +257,17 @@ window.addEventListener('keyup', (e) => {
 // ------------------------------------
 function gameLoop() {
     updateCursor();
+    updateDotsAndNearestArrow();
 
     let moved = false;
 
-    // --- KEYBOARD MOVEMENTS ---
+    // KEYBOARD MOVEMENTS
     if (keysPressed['w'] || keysPressed['arrowup']) { mapY += keyPanSpeed; moved = true; }
     if (keysPressed['s'] || keysPressed['arrowdown']) { mapY -= keyPanSpeed; moved = true; }
     if (keysPressed['a'] || keysPressed['arrowleft']) { mapX += keyPanSpeed; moved = true; }
     if (keysPressed['d'] || keysPressed['arrowright']) { mapX -= keyPanSpeed; moved = true; }
 
-    // --- SCREEN EDGE AUTO-PANNING (Pushes map infinitely when touching edges) ---
+    // SCREEN EDGE AUTO-PANNING
     if (cursorX < edgeThreshold) { mapX += edgePanSpeed; moved = true; }
     if (cursorX > window.innerWidth - edgeThreshold) { mapX -= edgePanSpeed; moved = true; }
     if (cursorY < edgeThreshold) { mapY += edgePanSpeed; moved = true; }
