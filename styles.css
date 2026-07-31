@@ -1,4 +1,3 @@
-/* Reset body and hide default browser cursor */
 * {
     box-sizing: border-box;
     margin: 0;
@@ -9,10 +8,10 @@ body, html {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    cursor: none; /* Hides default cursor */
+    cursor: none; /* Hides default browser cursor */
     background-color: #0d1117;
     font-family: Arial, sans-serif;
-    user-select: none; /* Prevents text highlighting while dragging map */
+    user-select: none;
 }
 
 /* Viewport Window */
@@ -30,7 +29,6 @@ body, html {
     position: absolute;
     top: 0;
     left: 0;
-    /* Visual grid pattern */
     background-size: 50px 50px;
     background-image: 
         linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
@@ -39,7 +37,7 @@ body, html {
     will-change: transform;
 }
 
-/* Temporary marker to give visual feedback on where (0,0) is */
+/* Temporary center marker */
 .map-center-marker {
     position: absolute;
     top: 1500px;
@@ -60,10 +58,9 @@ body, html {
     position: fixed;
     top: 0;
     left: 0;
-    pointer-events: none; /* Allows clicks to pass through to elements below */
+    pointer-events: none;
     z-index: 9999;
     box-shadow: 0 0 10px rgba(88, 166, 255, 0.8);
-    transition: transform 0.05s linear;
 }
 
 /* Inner dot for custom cursor */
