@@ -1,15 +1,30 @@
 const cursor = document.getElementById('custom-cursor');
 const arrow = document.getElementById('direction-arrow');
 const map = document.getElementById('map');
+const centerMarker = document.getElementById('center-marker');
 const container = document.getElementById('game-container');
 const lockHint = document.getElementById('lock-hint');
+const coordsHud = document.getElementById('coords-hud');
 
-// Map position tracking
-let mapX = -(3000 / 2 - window.innerWidth / 2);
-let mapY = -(3000 / 2 - window.innerHeight / 2);
+// Infinite Map World Offset Tracking
+let mapX = 0;
+let mapY = 0;
 
+// Update map background position and world landmark coordinates
 function updateMapTransform() {
-    map.style.transform = `translate(${mapX}px, ${mapY}px)`;
+    // 1. Shift the infinite tiling grid infinitely
+    map.style.backgroundPosition = `${mapX}px ${mapY}px`;
+
+    // 2. Position World Center (0, 0) marker relative to viewport center
+    const originScreenX = window.innerWidth / 2 + mapX;
+    const originScreenY = window.innerHeight / 2 + mapY;
+    centerMarker.style.left = `${originScreenX}px`;
+    centerMarker.style.top = `${originScreenY}px`;
+
+    // 3. Update HUD World Coordinates
+    const worldX = Math.round(-mapX);
+    const worldY = Math.round(-mapY);
+    coordsHud.innerText = `X: ${worldX} | Y: ${worldY}`;
 }
 updateMapTransform();
 
@@ -51,7 +66,7 @@ window.addEventListener('mousemove', (e) => {
         targetMouseY = e.clientY;
     }
 
-    // STRICT BOUNDARY CLAMPING
+    // STRICT BOUNDARY CLAMPING FOR CURSOR
     targetMouseX = Math.max(0, Math.min(window.innerWidth, targetMouseX));
     targetMouseY = Math.max(0, Math.min(window.innerHeight, targetMouseY));
 });
@@ -82,28 +97,26 @@ function updateCursor() {
     cursor.style.top = `${stiffY - 12}px`;
 
     // ------------------------------------
-    // DIRECTION ARROW INDICATOR (Real Mouse Trajectory)
+    // DIRECTION ARROW INDICATOR
     // ------------------------------------
     if (distance > 5) {
-        // Calculate angle towards real mouse target
         const angle = Math.atan2(dy, dx) * (180 / Math.PI);
         const rad = Math.atan2(dy, dx);
 
-        // Position arrow slightly ahead of the cursor ring
         const arrowX = stiffX + Math.cos(rad) * 22;
         const arrowY = stiffY + Math.sin(rad) * 22;
 
         arrow.style.left = `${arrowX - 12}px`;
         arrow.style.top = `${arrowY - 12}px`;
         arrow.style.transform = `rotate(${angle}deg)`;
-        arrow.style.opacity = '1'; // Show arrow when mouse is moving ahead
+        arrow.style.opacity = '1';
     } else {
-        arrow.style.opacity = '0'; // Hide arrow when cursor reaches destination
+        arrow.style.opacity = '0';
     }
 }
 
 // ------------------------------------
-// 2. EXPLORABLE MAP PANNING (Drag)
+// 2. INFINITE MAP PANNING (Drag)
 // ------------------------------------
 let isDragging = false;
 let startX = 0;
