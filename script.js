@@ -1,4 +1,5 @@
 const cursor = document.getElementById('custom-cursor');
+const arrow = document.getElementById('direction-arrow');
 const map = document.getElementById('map');
 const container = document.getElementById('game-container');
 const lockHint = document.getElementById('lock-hint');
@@ -34,31 +35,29 @@ container.addEventListener('click', () => {
 // Detect when pointer lock state changes
 document.addEventListener('pointerlockchange', () => {
     if (document.pointerLockElement === container) {
-        lockHint.style.opacity = '0'; // Hide lock hint when locked
+        lockHint.style.opacity = '0';
     } else {
-        lockHint.style.opacity = '1'; // Show hint if unlocked
+        lockHint.style.opacity = '1';
     }
 });
 
-// Track mouse movement and lock within screen bounds
+// Track mouse movement using real mouse sensitivity
 window.addEventListener('mousemove', (e) => {
     if (document.pointerLockElement === container) {
-        // When locked, add mouse deltas to position
         targetMouseX += e.movementX;
         targetMouseY += e.movementY;
     } else {
-        // When unlocked, use raw client coordinates
         targetMouseX = e.clientX;
         targetMouseY = e.clientY;
     }
 
-    // STRICT BOUNDARY CLAMPING (Never allows cursor target to leave the viewport)
+    // STRICT BOUNDARY CLAMPING
     targetMouseX = Math.max(0, Math.min(window.innerWidth, targetMouseX));
     targetMouseY = Math.max(0, Math.min(window.innerHeight, targetMouseY));
 });
 
 function updateCursor() {
-    // Calculate distance vector
+    // Calculate distance vector between current cursor and real mouse target
     const dx = targetMouseX - cursorX;
     const dy = targetMouseY - cursorY;
     const distance = Math.hypot(dx, dy);
@@ -68,7 +67,7 @@ function updateCursor() {
             cursorX = targetMouseX;
             cursorY = targetMouseY;
         } else {
-            // Constant speed movement
+            // Move slow custom cursor at constant speed
             cursorX += (dx / distance) * cursorSpeed;
             cursorY += (dy / distance) * cursorSpeed;
         }
@@ -78,9 +77,29 @@ function updateCursor() {
     const stiffX = Math.round(cursorX / stiffnessStep) * stiffnessStep;
     const stiffY = Math.round(cursorY / stiffnessStep) * stiffnessStep;
 
-    // Render cursor position
+    // Render custom cursor position
     cursor.style.left = `${stiffX - 12}px`;
     cursor.style.top = `${stiffY - 12}px`;
+
+    // ------------------------------------
+    // DIRECTION ARROW INDICATOR (Real Mouse Trajectory)
+    // ------------------------------------
+    if (distance > 5) {
+        // Calculate angle towards real mouse target
+        const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+        const rad = Math.atan2(dy, dx);
+
+        // Position arrow slightly ahead of the cursor ring
+        const arrowX = stiffX + Math.cos(rad) * 22;
+        const arrowY = stiffY + Math.sin(rad) * 22;
+
+        arrow.style.left = `${arrowX - 12}px`;
+        arrow.style.top = `${arrowY - 12}px`;
+        arrow.style.transform = `rotate(${angle}deg)`;
+        arrow.style.opacity = '1'; // Show arrow when mouse is moving ahead
+    } else {
+        arrow.style.opacity = '0'; // Hide arrow when cursor reaches destination
+    }
 }
 
 // ------------------------------------
