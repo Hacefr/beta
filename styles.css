@@ -22,6 +22,23 @@ body, html {
     overflow: hidden;
 }
 
+/* Onscreen Instruction Overlay */
+#lock-hint {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 0.9rem;
+    z-index: 1000;
+    pointer-events: none;
+    transition: opacity 0.3s;
+}
+
 /* 3000px x 3000px Explorable Map Grid */
 #map {
     width: 3000px;
