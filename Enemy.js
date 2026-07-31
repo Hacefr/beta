@@ -56,27 +56,22 @@ class EnemyManager {
         // ENEMY 1: THE SHADOW (Exact Movement History Trail)
         // ----------------------------------------------------
         if (this.type === 1) {
-            // Push current player world position into history
             this.pathHistory.push({ x: playerWorldX, y: playerWorldY });
 
-            // If history is longer than delay, follow step-by-step
             if (this.pathHistory.length > this.historyDelay) {
                 const enemyPos = this.pathHistory.shift();
 
-                // Convert world position to current screen coordinates
                 const screenX = originScreenX + enemyPos.x;
                 const screenY = originScreenY + enemyPos.y;
 
                 this.element.style.left = `${screenX}px`;
                 this.element.style.top = `${screenY}px`;
 
-                // Check collision with player cursor
                 const dist = Math.hypot(screenX - cursorX, screenY - cursorY);
                 if (dist < 18) {
                     return true; // Player Dies!
                 }
             } else {
-                // Keep enemy hidden until trail starts
                 this.element.style.left = `-9999px`;
             }
         }
@@ -100,7 +95,6 @@ class EnemyManager {
             this.element.style.left = `${screenX}px`;
             this.element.style.top = `${screenY}px`;
 
-            // Check collision with player cursor
             const playerDist = Math.hypot(screenX - cursorX, screenY - cursorY);
             if (playerDist < 20) {
                 return true; // Player Dies!
@@ -113,7 +107,6 @@ class EnemyManager {
         else if (this.type === 3) {
             this.stateTimer++;
 
-            // STATE 1: FOLLOWING PLAYER
             if (this.mineState === 'FOLLOWING') {
                 this.blastElement.style.display = 'none';
                 
@@ -126,28 +119,22 @@ class EnemyManager {
                     this.mineWorldY += (dy / distance) * this.mineSpeed;
                 }
 
-                // Transition to CHARGING after 180 frames (~3 seconds)
-                if (this.stateTimer > 180) {
+                if (this.stateTimer > 180) { // 3 seconds
                     this.mineState = 'CHARGING';
                     this.stateTimer = 0;
                 }
             }
-
-            // STATE 2: CHARGING DANGER RADIUS
             else if (this.mineState === 'CHARGING') {
                 this.blastElement.style.display = 'block';
 
-                // Expand danger circle over 90 frames (~1.5 seconds)
                 const progress = Math.min(1, this.stateTimer / 90);
                 this.currentBlastRadius = progress * this.blastMaxRadius;
 
-                if (this.stateTimer > 90) {
+                if (this.stateTimer > 90) { // 1.5 seconds
                     this.mineState = 'EXPLODING';
                     this.stateTimer = 0;
                 }
             }
-
-            // STATE 3: EXPLODING (Check if player is inside radius)
             else if (this.mineState === 'EXPLODING') {
                 this.blastElement.style.border = '3px solid #ff4757';
                 this.blastElement.style.background = 'rgba(255, 71, 87, 0.6)';
@@ -156,12 +143,11 @@ class EnemyManager {
                 const enemyScreenY = originScreenY + this.mineWorldY;
                 const playerDist = Math.hypot(enemyScreenX - cursorX, enemyScreenY - cursorY);
 
-                // If player is inside the blast radius during detonation -> DIE!
                 if (playerDist <= this.blastMaxRadius) {
                     return true;
                 }
 
-                if (this.stateTimer > 30) { // Explodes for 0.5 sec then resets
+                if (this.stateTimer > 30) {
                     this.mineState = 'FOLLOWING';
                     this.stateTimer = 0;
                     this.blastElement.style.border = '2px dashed #ff4757';
@@ -169,7 +155,6 @@ class EnemyManager {
                 }
             }
 
-            // Render Mine and Blast Radius
             const screenX = originScreenX + this.mineWorldX;
             const screenY = originScreenY + this.mineWorldY;
 
@@ -184,6 +169,6 @@ class EnemyManager {
             }
         }
 
-        return false; // Player is safe
+        return false;
     }
 }
