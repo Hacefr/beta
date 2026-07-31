@@ -33,7 +33,6 @@ function spawnDots() {
     collectedCount = 0;
 
     for (let i = 0; i < TOTAL_DOTS; i++) {
-        // Random world coordinates between -2500 and +2500
         const x = Math.round((Math.random() - 0.5) * 5000);
         const y = Math.round((Math.random() - 0.5) * 5000);
 
@@ -47,7 +46,6 @@ function spawnDots() {
 }
 spawnDots();
 
-// Update map background position, landmarks, and HUD
 function updateMapTransform() {
     map.style.backgroundPosition = `${mapX}px ${mapY}px`;
 
@@ -66,9 +64,18 @@ updateMapTransform();
 // ENEMY SELECTION & POINTER LOCK
 // ------------------------------------
 function selectEnemy(enemyType) {
-    // Hide enemy select modal
     enemySelectModal.style.display = 'none';
     gameOverModal.style.display = 'none';
+
+    // Show game cursor & hide standard system cursor
+    cursor.style.display = 'block';
+    document.body.style.cursor = 'none';
+
+    // Reset cursor coordinates to center of screen
+    targetMouseX = window.innerWidth / 2;
+    targetMouseY = window.innerHeight / 2;
+    cursorX = targetMouseX;
+    cursorY = targetMouseY;
 
     // Request Pointer Lock directly on enemy click
     container.requestPointerLock();
@@ -81,6 +88,10 @@ function selectEnemy(enemyType) {
 function gameOver() {
     isGameActive = false;
     document.exitPointerLock();
+    document.body.style.cursor = 'auto';
+    cursor.style.display = 'none';
+    blueArrow.style.opacity = '0';
+    whiteArrow.style.opacity = '0';
     gameOverModal.style.display = 'flex';
 }
 
@@ -93,6 +104,7 @@ function resetGame() {
 
     gameOverModal.style.display = 'none';
     enemySelectModal.style.display = 'flex';
+    document.body.style.cursor = 'auto';
 }
 
 // ------------------------------------
@@ -109,6 +121,8 @@ const edgeThreshold = 60;   // Distance in pixels from screen edge to trigger au
 const edgePanSpeed = 10;    // Speed of infinite map auto-scrolling
 
 window.addEventListener('mousemove', (e) => {
+    if (!isGameActive) return; // Freeze input if game hasn't started!
+
     if (document.pointerLockElement === container) {
         targetMouseX += e.movementX;
         targetMouseY += e.movementY;
@@ -122,6 +136,8 @@ window.addEventListener('mousemove', (e) => {
 });
 
 function updateCursor() {
+    if (!isGameActive) return;
+
     const dx = targetMouseX - cursorX;
     const dy = targetMouseY - cursorY;
     const distance = Math.hypot(dx, dy);
@@ -142,17 +158,16 @@ function updateCursor() {
     cursor.style.left = `${stiffX - 12}px`;
     cursor.style.top = `${stiffY - 12}px`;
 
-    // Blue direction arrow
+    // --------------------------------------------------------
+    // BLUE DIRECTION ARROW (Orbital transform locked to player)
+    // --------------------------------------------------------
     if (distance > 5) {
         const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-        const rad = Math.atan2(dy, dx);
 
-        const arrowX = stiffX + Math.cos(rad) * 22;
-        const arrowY = stiffY + Math.sin(rad) * 22;
-
-        blueArrow.style.left = `${arrowX - 12}px`;
-        blueArrow.style.top = `${arrowY - 12}px`;
-        blueArrow.style.transform = `rotate(${angle}deg)`;
+        // Center on custom cursor and orbit 24px outwards
+        blueArrow.style.left = `${stiffX - 12}px`;
+        blueArrow.style.top = `${stiffY - 12}px`;
+        blueArrow.style.transform = `rotate(${angle}deg) translateX(24px)`;
         blueArrow.style.opacity = '1';
     } else {
         blueArrow.style.opacity = '0';
@@ -178,6 +193,8 @@ function updateDotsAndNearestArrow() {
         dot.element.style.left = `${screenX}px`;
         dot.element.style.top = `${screenY}px`;
 
+        if (!isGameActive) return; // Skip collection/arrow check if menu is active
+
         const dist = Math.hypot(screenX - cursorX, screenY - cursorY);
 
         if (dist < 20) {
@@ -198,19 +215,18 @@ function updateDotsAndNearestArrow() {
         }
     });
 
-    // White Arrow pointing to nearest dot
-    if (nearestDot) {
+    // --------------------------------------------------------
+    // WHITE NEAREST-DOT ARROW (Orbital transform locked to player)
+    // --------------------------------------------------------
+    if (isGameActive && nearestDot) {
         const dx = nearestDot.screenX - cursorX;
         const dy = nearestDot.screenY - cursorY;
         const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-        const rad = Math.atan2(dy, dx);
 
-        const arrowX = cursorX + Math.cos(rad) * 36;
-        const arrowY = cursorY + Math.sin(rad) * 36;
-
-        whiteArrow.style.left = `${arrowX - 12}px`;
-        whiteArrow.style.top = `${arrowY - 12}px`;
-        whiteArrow.style.transform = `rotate(${angle}deg)`;
+        // Center on custom cursor and orbit 38px outwards
+        whiteArrow.style.left = `${cursorX - 12}px`;
+        whiteArrow.style.top = `${cursorY - 12}px`;
+        whiteArrow.style.transform = `rotate(${angle}deg) translateX(38px)`;
         whiteArrow.style.opacity = '1';
     } else {
         whiteArrow.style.opacity = '0';
@@ -218,7 +234,7 @@ function updateDotsAndNearestArrow() {
 }
 
 // ------------------------------------
-// 3. KEYBOARD & MAP PANNING
+// 3. KEYBOARD CONTROL
 // ------------------------------------
 const keysPressed = {};
 const keyPanSpeed = 8;
@@ -235,10 +251,9 @@ window.addEventListener('keyup', (e) => {
 // MAIN GAME LOOP
 // ------------------------------------
 function gameLoop() {
-    updateCursor();
-    updateDotsAndNearestArrow();
-
     if (isGameActive) {
+        updateCursor();
+
         // Calculate player's current world position
         const playerWorldX = cursorX - (window.innerWidth / 2 + mapX);
         const playerWorldY = cursorY - (window.innerHeight / 2 + mapY);
@@ -248,26 +263,27 @@ function gameLoop() {
         if (playerDied) {
             gameOver();
         }
+
+        let moved = false;
+
+        // KEYBOARD MOVEMENTS
+        if (keysPressed['w'] || keysPressed['arrowup']) { mapY += keyPanSpeed; moved = true; }
+        if (keysPressed['s'] || keysPressed['arrowdown']) { mapY -= keyPanSpeed; moved = true; }
+        if (keysPressed['a'] || keysPressed['arrowleft']) { mapX += keyPanSpeed; moved = true; }
+        if (keysPressed['d'] || keysPressed['arrowright']) { mapX -= keyPanSpeed; moved = true; }
+
+        // SCREEN EDGE AUTO-PANNING
+        if (cursorX < edgeThreshold) { mapX += edgePanSpeed; moved = true; }
+        if (cursorX > window.innerWidth - edgeThreshold) { mapX -= edgePanSpeed; moved = true; }
+        if (cursorY < edgeThreshold) { mapY += edgePanSpeed; moved = true; }
+        if (cursorY > window.innerHeight - edgeThreshold) { mapY -= edgePanSpeed; moved = true; }
+
+        if (moved) {
+            updateMapTransform();
+        }
     }
 
-    let moved = false;
-
-    // KEYBOARD MOVEMENTS
-    if (keysPressed['w'] || keysPressed['arrowup']) { mapY += keyPanSpeed; moved = true; }
-    if (keysPressed['s'] || keysPressed['arrowdown']) { mapY -= keyPanSpeed; moved = true; }
-    if (keysPressed['a'] || keysPressed['arrowleft']) { mapX += keyPanSpeed; moved = true; }
-    if (keysPressed['d'] || keysPressed['arrowright']) { mapX -= keyPanSpeed; moved = true; }
-
-    // SCREEN EDGE AUTO-PANNING
-    if (cursorX < edgeThreshold) { mapX += edgePanSpeed; moved = true; }
-    if (cursorX > window.innerWidth - edgeThreshold) { mapX -= edgePanSpeed; moved = true; }
-    if (cursorY < edgeThreshold) { mapY += edgePanSpeed; moved = true; }
-    if (cursorY > window.innerHeight - edgeThreshold) { mapY -= edgePanSpeed; moved = true; }
-
-    if (moved) {
-        updateMapTransform();
-    }
-
+    updateDotsAndNearestArrow();
     requestAnimationFrame(gameLoop);
 }
 
