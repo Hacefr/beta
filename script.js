@@ -12,16 +12,16 @@ function updateMapTransform() {
 updateMapTransform();
 
 // ------------------------------------
-// 1. SLOW & STIFF CURSOR LOGIC
+// 1. CONSTANT SPEED & STIFF CURSOR LOGIC
 // ------------------------------------
 let targetMouseX = window.innerWidth / 2;
 let targetMouseY = window.innerHeight / 2;
 let cursorX = targetMouseX;
 let cursorY = targetMouseY;
 
-// Tweakable cursor settings
-const cursorSpeed = 0.04; // Lower = slower/heavier drag
-const stiffnessStep = 10;  // Higher = stiffer / step-snapped movement
+// --- TWEAKABLE CURSOR SETTINGS ---
+const cursorSpeed = 2.5;  // Fixed speed in pixels per frame (lower = slower)
+const stiffnessStep = 8; // Pixel step snapping for stiff/robotic feel
 
 // Track actual mouse position
 window.addEventListener('mousemove', (e) => {
@@ -30,11 +30,25 @@ window.addEventListener('mousemove', (e) => {
 });
 
 function updateCursor() {
-    // Move cursor slowly towards target mouse position
-    cursorX += (targetMouseX - cursorX) * cursorSpeed;
-    cursorY += (targetMouseY - cursorY) * cursorSpeed;
+    // Calculate distance vector to the target mouse position
+    const dx = targetMouseX - cursorX;
+    const dy = targetMouseY - cursorY;
+    const distance = Math.hypot(dx, dy);
 
-    // Make movement stiff by snapping to pixel increments
+    // If cursor is not already at target position
+    if (distance > 0) {
+        if (distance <= cursorSpeed) {
+            // Snap directly if very close
+            cursorX = targetMouseX;
+            cursorY = targetMouseY;
+        } else {
+            // Move toward target at a completely CONSTANT speed
+            cursorX += (dx / distance) * cursorSpeed;
+            cursorY += (dy / distance) * cursorSpeed;
+        }
+    }
+
+    // Apply stiff pixel grid snapping
     const stiffX = Math.round(cursorX / stiffnessStep) * stiffnessStep;
     const stiffY = Math.round(cursorY / stiffnessStep) * stiffnessStep;
 
