@@ -36,9 +36,11 @@ let targetMouseY = window.innerHeight / 2;
 let cursorX = targetMouseX;
 let cursorY = targetMouseY;
 
-// --- TWEAKABLE CURSOR SETTINGS ---
-const cursorSpeed = 2.5;  // Fixed speed in pixels per frame
-const stiffnessStep = 8;  // Pixel step snapping for stiff feel
+// --- TWEAKABLE CURSOR & PANNING SETTINGS ---
+const cursorSpeed = 2.5;    // Fixed cursor speed in pixels per frame
+const stiffnessStep = 8;    // Pixel step snapping for stiff feel
+const edgeThreshold = 60;   // Distance in pixels from screen edge to trigger auto-scroll
+const edgePanSpeed = 10;    // Speed of infinite map auto-scrolling
 
 // Request pointer lock when clicking on the game window
 container.addEventListener('click', () => {
@@ -66,7 +68,7 @@ window.addEventListener('mousemove', (e) => {
         targetMouseY = e.clientY;
     }
 
-    // STRICT BOUNDARY CLAMPING FOR CURSOR
+    // STRICT BOUNDARY CLAMPING FOR CURSOR TARGET
     targetMouseX = Math.max(0, Math.min(window.innerWidth, targetMouseX));
     targetMouseY = Math.max(0, Math.min(window.innerHeight, targetMouseY));
 });
@@ -149,7 +151,7 @@ window.addEventListener('mousemove', (e) => {
 // 3. KEYBOARD PANNING (WASD / Arrows)
 // ------------------------------------
 const keysPressed = {};
-const panSpeed = 8;
+const keyPanSpeed = 8;
 
 window.addEventListener('keydown', (e) => {
     keysPressed[e.key.toLowerCase()] = true;
@@ -166,10 +168,18 @@ function gameLoop() {
     updateCursor();
 
     let moved = false;
-    if (keysPressed['w'] || keysPressed['arrowup']) { mapY += panSpeed; moved = true; }
-    if (keysPressed['s'] || keysPressed['arrowdown']) { mapY -= panSpeed; moved = true; }
-    if (keysPressed['a'] || keysPressed['arrowleft']) { mapX += panSpeed; moved = true; }
-    if (keysPressed['d'] || keysPressed['arrowright']) { mapX -= panSpeed; moved = true; }
+
+    // --- KEYBOARD MOVEMENTS ---
+    if (keysPressed['w'] || keysPressed['arrowup']) { mapY += keyPanSpeed; moved = true; }
+    if (keysPressed['s'] || keysPressed['arrowdown']) { mapY -= keyPanSpeed; moved = true; }
+    if (keysPressed['a'] || keysPressed['arrowleft']) { mapX += keyPanSpeed; moved = true; }
+    if (keysPressed['d'] || keysPressed['arrowright']) { mapX -= keyPanSpeed; moved = true; }
+
+    // --- SCREEN EDGE AUTO-PANNING (Pushes map infinitely when touching edges) ---
+    if (cursorX < edgeThreshold) { mapX += edgePanSpeed; moved = true; }
+    if (cursorX > window.innerWidth - edgeThreshold) { mapX -= edgePanSpeed; moved = true; }
+    if (cursorY < edgeThreshold) { mapY += edgePanSpeed; moved = true; }
+    if (cursorY > window.innerHeight - edgeThreshold) { mapY -= edgePanSpeed; moved = true; }
 
     if (moved) {
         updateMapTransform();
