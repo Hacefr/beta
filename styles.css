@@ -8,7 +8,7 @@ body, html {
     width: 100%;
     height: 100%;
     overflow: hidden;
-    cursor: none; /* Hides default browser cursor */
+    cursor: auto; /* Default system cursor for menus */
     background-color: #0d1117;
     font-family: Arial, sans-serif;
     user-select: none;
@@ -49,7 +49,7 @@ body, html {
 #enemy-select-modal {
     position: absolute;
     inset: 0;
-    background: rgba(13, 17, 23, 0.92);
+    background: rgba(13, 17, 23, 0.94);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -132,6 +132,7 @@ body, html {
     justify-content: center;
     z-index: 10000;
     color: #ffffff;
+    cursor: default;
 }
 
 #game-over-modal h1 {
@@ -216,13 +217,11 @@ body, html {
     display: none;
 }
 
-/* Enemy Type 1: Shadow Stalker */
 #enemy-element.type-1 {
     background-color: #ff4757;
     box-shadow: 0 0 15px #ff4757, 0 0 30px rgba(255, 71, 87, 0.6);
 }
 
-/* Enemy Type 2: Slow Snail */
 #enemy-element.type-2 {
     background-color: #2ed573;
     box-shadow: 0 0 15px #2ed573;
@@ -236,13 +235,11 @@ body, html {
     transform: translate(-50%, -50%);
 }
 
-/* Enemy Type 3: Pulse Mine */
 #enemy-element.type-3 {
     background-color: #ffa502;
     box-shadow: 0 0 15px #ffa502;
 }
 
-/* Blast Radius indicator for Pulse Mine */
 #blast-radius {
     position: absolute;
     width: 0px;
@@ -267,3 +264,48 @@ body, html {
     left: 0;
     pointer-events: none;
     z-index: 9999;
+    box-shadow: 0 0 10px rgba(88, 166, 255, 0.8);
+    display: none; /* Shown only when game is active */
+}
+
+#custom-cursor::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 4px;
+    height: 4px;
+    background-color: #58a6ff;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Blue Direction Arrow Indicator */
+#direction-arrow {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 24px;
+    height: 24px;
+    pointer-events: none;
+    z-index: 9998;
+    opacity: 0;
+    transform-origin: center center;
+    filter: drop-shadow(0 0 6px #58a6ff);
+    transition: opacity 0.15s ease;
+}
+
+/* White Nearest-Dot Arrow Indicator */
+#nearest-dot-arrow {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 24px;
+    height: 24px;
+    pointer-events: none;
+    z-index: 9998;
+    opacity: 0;
+    transform-origin: center center;
+    filter: drop-shadow(0 0 8px #ffffff);
+    transition: opacity 0.15s ease;
+}
