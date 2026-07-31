@@ -3,26 +3,48 @@ const map = document.getElementById('map');
 const container = document.getElementById('game-container');
 
 // Map position tracking
-let mapX = -(3000 / 2 - window.innerWidth / 2); // Start centered in map
+let mapX = -(3000 / 2 - window.innerWidth / 2);
 let mapY = -(3000 / 2 - window.innerHeight / 2);
 
-// Update map position visually
 function updateMapTransform() {
     map.style.transform = `translate(${mapX}px, ${mapY}px)`;
 }
 updateMapTransform();
 
 // ------------------------------------
-// 1. CUSTOM CURSOR TRACKING
+// 1. SLOW & STIFF CURSOR LOGIC
 // ------------------------------------
+let targetMouseX = window.innerWidth / 2;
+let targetMouseY = window.innerHeight / 2;
+let cursorX = targetMouseX;
+let cursorY = targetMouseY;
+
+// Tweakable cursor settings
+const cursorSpeed = 0.04; // Lower = slower/heavier drag
+const stiffnessStep = 10;  // Higher = stiffer / step-snapped movement
+
+// Track actual mouse position
 window.addEventListener('mousemove', (e) => {
-    // Offset by half width/height (12px) to center cursor on mouse position
-    cursor.style.left = `${e.clientX - 12}px`;
-    cursor.style.top = `${e.clientY - 12}px`;
+    targetMouseX = e.clientX;
+    targetMouseY = e.clientY;
 });
 
+function updateCursor() {
+    // Move cursor slowly towards target mouse position
+    cursorX += (targetMouseX - cursorX) * cursorSpeed;
+    cursorY += (targetMouseY - cursorY) * cursorSpeed;
+
+    // Make movement stiff by snapping to pixel increments
+    const stiffX = Math.round(cursorX / stiffnessStep) * stiffnessStep;
+    const stiffY = Math.round(cursorY / stiffnessStep) * stiffnessStep;
+
+    // Render cursor position
+    cursor.style.left = `${stiffX - 12}px`;
+    cursor.style.top = `${stiffY - 12}px`;
+}
+
 // ------------------------------------
-// 2. EXPLORABLE MAP PANNING (Drag to Pan)
+// 2. EXPLORABLE MAP PANNING (Drag)
 // ------------------------------------
 let isDragging = false;
 let startX = 0;
@@ -59,9 +81,15 @@ window.addEventListener('keyup', (e) => {
     keysPressed[e.key.toLowerCase()] = false;
 });
 
+// ------------------------------------
+// MAIN GAME LOOP
+// ------------------------------------
 function gameLoop() {
-    let moved = false;
+    // Update cursor position every frame
+    updateCursor();
 
+    // Update map keyboard movement
+    let moved = false;
     if (keysPressed['w'] || keysPressed['arrowup']) { mapY += panSpeed; moved = true; }
     if (keysPressed['s'] || keysPressed['arrowdown']) { mapY -= panSpeed; moved = true; }
     if (keysPressed['a'] || keysPressed['arrowleft']) { mapX += panSpeed; moved = true; }
@@ -74,5 +102,5 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
-// Start game loop for keyboard movement
+// Start game loop
 gameLoop();
