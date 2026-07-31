@@ -31,8 +31,35 @@
             <span id="score-text">Dots: 0 / 50</span>
         </div>
 
-        <!-- Overlay Prompt for Pointer Lock -->
-        <div id="lock-hint">Click anywhere to lock pointer inside game (ESC to unlock)</div>
+        <!-- Enemy Selection Modal (Also locks pointer on click) -->
+        <div id="enemy-select-modal">
+            <h2>CHOOSE YOUR ENEMY</h2>
+            <p>Click an enemy card to begin and lock mouse pointer</p>
+            <div class="enemy-cards">
+                <div class="card" onclick="selectEnemy(1)">
+                    <div class="card-icon shadow-icon"></div>
+                    <h3>1. The Shadow</h3>
+                    <p>Follows your exact movement trail. Stopping or retracing your steps means instant death!</p>
+                </div>
+                <div class="card" onclick="selectEnemy(2)">
+                    <div class="card-icon snail-icon">🐚</div>
+                    <h3>2. Slow Snail</h3>
+                    <p>Creeps directly toward you endlessly at a slow, relentless pace.</p>
+                </div>
+                <div class="card" onclick="selectEnemy(3)">
+                    <div class="card-icon bomb-icon">💣</div>
+                    <h3>3. Pulse Mine</h3>
+                    <p>Tracks you, then stops and charges a blast radius. Don't be inside when it detonates!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Over Modal -->
+        <div id="game-over-modal">
+            <h1 id="game-over-title">YOU DIED</h1>
+            <p id="game-over-msg">An enemy caught you!</p>
+            <button onclick="resetGame()">Try Again</button>
+        </div>
 
         <!-- Infinite Explorable Map Background -->
         <div id="map">
@@ -41,9 +68,16 @@
             
             <!-- Container for Collectible Dots -->
             <div id="dots-container"></div>
+
+            <!-- Enemy Element -->
+            <div id="enemy-element"></div>
+            <!-- Pulse Mine Danger Blast Radius -->
+            <div id="blast-radius"></div>
         </div>
     </div>
 
+    <!-- Load Enemy Logic first, then Script logic -->
+    <script src="Enemy.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
