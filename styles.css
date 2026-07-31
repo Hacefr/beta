@@ -42,24 +42,124 @@ body, html {
 }
 
 #score-text {
-    color: #ffd700; /* Gold text for score */
+    color: #ffd700;
 }
 
-/* Onscreen Instruction Overlay */
-#lock-hint {
+/* Enemy Selection Screen Modal */
+#enemy-select-modal {
     position: absolute;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.7);
+    inset: 0;
+    background: rgba(13, 17, 23, 0.92);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
     color: #ffffff;
-    padding: 8px 16px;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    font-size: 0.9rem;
-    z-index: 1000;
-    pointer-events: none;
-    transition: opacity 0.3s;
+    cursor: default;
+}
+
+#enemy-select-modal h2 {
+    font-size: 2.2rem;
+    color: #58a6ff;
+    margin-bottom: 8px;
+}
+
+#enemy-select-modal p {
+    color: #8b949e;
+    margin-bottom: 30px;
+}
+
+.enemy-cards {
+    display: flex;
+    gap: 20px;
+    max-width: 900px;
+}
+
+.card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 24px;
+    width: 260px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-6px);
+    border-color: #58a6ff;
+    box-shadow: 0 8px 24px rgba(88, 166, 255, 0.25);
+}
+
+.card h3 {
+    color: #f0f6fc;
+    margin: 12px 0 8px 0;
+}
+
+.card p {
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin-bottom: 0;
+}
+
+.card-icon {
+    font-size: 2.5rem;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.shadow-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #ff4757;
+    box-shadow: 0 0 12px #ff4757;
+    margin: 0 auto;
+}
+
+/* Game Over Modal */
+#game-over-modal {
+    position: absolute;
+    inset: 0;
+    background: rgba(13, 17, 23, 0.9);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    color: #ffffff;
+}
+
+#game-over-modal h1 {
+    font-size: 3rem;
+    color: #ff4757;
+    margin-bottom: 12px;
+}
+
+#game-over-modal p {
+    font-size: 1.2rem;
+    color: #8b949e;
+    margin-bottom: 24px;
+}
+
+#game-over-modal button {
+    background: #238636;
+    color: white;
+    border: none;
+    padding: 12px 28px;
+    font-size: 1.1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+#game-over-modal button:hover {
+    background: #2ea043;
 }
 
 /* Infinite Tiling Map Viewport */
@@ -93,7 +193,7 @@ body, html {
     position: absolute;
     width: 12px;
     height: 12px;
-    background-color: #ffd700; /* Glowing Gold */
+    background-color: #ffd700;
     border-radius: 50%;
     transform: translate(-50%, -50%);
     box-shadow: 0 0 10px #ffd700, 0 0 20px rgba(255, 215, 0, 0.6);
@@ -101,6 +201,58 @@ body, html {
 }
 
 .dot.collected {
+    display: none;
+}
+
+/* Enemies Styling */
+#enemy-element {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 50;
+    display: none;
+}
+
+/* Enemy Type 1: Shadow Stalker */
+#enemy-element.type-1 {
+    background-color: #ff4757;
+    box-shadow: 0 0 15px #ff4757, 0 0 30px rgba(255, 71, 87, 0.6);
+}
+
+/* Enemy Type 2: Slow Snail */
+#enemy-element.type-2 {
+    background-color: #2ed573;
+    box-shadow: 0 0 15px #2ed573;
+}
+#enemy-element.type-2::after {
+    content: '🐚';
+    font-size: 18px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Enemy Type 3: Pulse Mine */
+#enemy-element.type-3 {
+    background-color: #ffa502;
+    box-shadow: 0 0 15px #ffa502;
+}
+
+/* Blast Radius indicator for Pulse Mine */
+#blast-radius {
+    position: absolute;
+    width: 0px;
+    height: 0px;
+    border-radius: 50%;
+    border: 2px dashed #ff4757;
+    background: rgba(255, 71, 87, 0.2);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 40;
     display: none;
 }
 
@@ -115,48 +267,3 @@ body, html {
     left: 0;
     pointer-events: none;
     z-index: 9999;
-    box-shadow: 0 0 10px rgba(88, 166, 255, 0.8);
-}
-
-/* Inner dot for custom cursor */
-#custom-cursor::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 4px;
-    height: 4px;
-    background-color: #58a6ff;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-}
-
-/* Blue Direction Arrow Indicator */
-#direction-arrow {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 24px;
-    height: 24px;
-    pointer-events: none;
-    z-index: 9998;
-    opacity: 0;
-    transform-origin: center center;
-    filter: drop-shadow(0 0 6px #58a6ff);
-    transition: opacity 0.15s ease;
-}
-
-/* White Nearest-Dot Arrow Indicator */
-#nearest-dot-arrow {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 24px;
-    height: 24px;
-    pointer-events: none;
-    z-index: 9998;
-    opacity: 0;
-    transform-origin: center center;
-    filter: drop-shadow(0 0 8px #ffffff);
-    transition: opacity 0.15s ease;
-}
