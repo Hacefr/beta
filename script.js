@@ -1,6 +1,7 @@
 const cursor = document.getElementById('custom-cursor');
 const map = document.getElementById('map');
 const container = document.getElementById('game-container');
+const lockHint = document.getElementById('lock-hint');
 
 // Map position tracking
 let mapX = -(3000 / 2 - window.innerWidth / 2);
@@ -12,7 +13,7 @@ function updateMapTransform() {
 updateMapTransform();
 
 // ------------------------------------
-// 1. CONSTANT SPEED & STIFF CURSOR LOGIC
+// 1. CONSTANT SPEED & LOCKED CURSOR LOGIC
 // ------------------------------------
 let targetMouseX = window.innerWidth / 2;
 let targetMouseY = window.innerHeight / 2;
@@ -20,29 +21,54 @@ let cursorX = targetMouseX;
 let cursorY = targetMouseY;
 
 // --- TWEAKABLE CURSOR SETTINGS ---
-const cursorSpeed = 2.5;  // Fixed speed in pixels per frame (lower = slower)
-const stiffnessStep = 8; // Pixel step snapping for stiff/robotic feel
+const cursorSpeed = 2.5;  // Fixed speed in pixels per frame
+const stiffnessStep = 8;  // Pixel step snapping for stiff feel
 
-// Track actual mouse position
+// Request pointer lock when clicking on the game window
+container.addEventListener('click', () => {
+    if (document.pointerLockElement !== container) {
+        container.requestPointerLock();
+    }
+});
+
+// Detect when pointer lock state changes
+document.addEventListener('pointerlockchange', () => {
+    if (document.pointerLockElement === container) {
+        lockHint.style.opacity = '0'; // Hide lock hint when locked
+    } else {
+        lockHint.style.opacity = '1'; // Show hint if unlocked
+    }
+});
+
+// Track mouse movement and lock within screen bounds
 window.addEventListener('mousemove', (e) => {
-    targetMouseX = e.clientX;
-    targetMouseY = e.clientY;
+    if (document.pointerLockElement === container) {
+        // When locked, add mouse deltas to position
+        targetMouseX += e.movementX;
+        targetMouseY += e.movementY;
+    } else {
+        // When unlocked, use raw client coordinates
+        targetMouseX = e.clientX;
+        targetMouseY = e.clientY;
+    }
+
+    // STRICT BOUNDARY CLAMPING (Never allows cursor target to leave the viewport)
+    targetMouseX = Math.max(0, Math.min(window.innerWidth, targetMouseX));
+    targetMouseY = Math.max(0, Math.min(window.innerHeight, targetMouseY));
 });
 
 function updateCursor() {
-    // Calculate distance vector to the target mouse position
+    // Calculate distance vector
     const dx = targetMouseX - cursorX;
     const dy = targetMouseY - cursorY;
     const distance = Math.hypot(dx, dy);
 
-    // If cursor is not already at target position
     if (distance > 0) {
         if (distance <= cursorSpeed) {
-            // Snap directly if very close
             cursorX = targetMouseX;
             cursorY = targetMouseY;
         } else {
-            // Move toward target at a completely CONSTANT speed
+            // Constant speed movement
             cursorX += (dx / distance) * cursorSpeed;
             cursorY += (dy / distance) * cursorSpeed;
         }
@@ -76,8 +102,14 @@ window.addEventListener('mouseup', () => {
 
 window.addEventListener('mousemove', (e) => {
     if (!isDragging) return;
-    mapX = e.clientX - startX;
-    mapY = e.clientY - startY;
+
+    if (document.pointerLockElement === container) {
+        mapX += e.movementX;
+        mapY += e.movementY;
+    } else {
+        mapX = e.clientX - startX;
+        mapY = e.clientY - startY;
+    }
     updateMapTransform();
 });
 
@@ -99,10 +131,8 @@ window.addEventListener('keyup', (e) => {
 // MAIN GAME LOOP
 // ------------------------------------
 function gameLoop() {
-    // Update cursor position every frame
     updateCursor();
 
-    // Update map keyboard movement
     let moved = false;
     if (keysPressed['w'] || keysPressed['arrowup']) { mapY += panSpeed; moved = true; }
     if (keysPressed['s'] || keysPressed['arrowdown']) { mapY -= panSpeed; moved = true; }
