@@ -8,8 +8,14 @@
 </head>
 <body>
 
-    <!-- Direction Arrow Indicator (Targeting Trajectory) -->
+    <!-- Blue Direction Arrow Indicator (Real Mouse Trajectory) -->
     <svg id="direction-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#58a6ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="12" x2="19" y2="12"></line>
+        <polyline points="12 5 19 12 12 19"></polyline>
+    </svg>
+
+    <!-- White Arrow Indicator (Points to Nearest Collectible Dot) -->
+    <svg id="nearest-dot-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
         <line x1="3" y1="12" x2="19" y2="12"></line>
         <polyline points="12 5 19 12 12 19"></polyline>
     </svg>
@@ -19,8 +25,11 @@
 
     <!-- Viewport / Camera Window -->
     <div id="game-container">
-        <!-- Live World Coordinates HUD -->
-        <div id="coords-hud">X: 0 | Y: 0</div>
+        <!-- Live World Coordinates & Score HUD -->
+        <div id="coords-hud">
+            <span id="pos-text">X: 0 | Y: 0</span>
+            <span id="score-text">Dots: 0 / 50</span>
+        </div>
 
         <!-- Overlay Prompt for Pointer Lock -->
         <div id="lock-hint">Click anywhere to lock pointer inside game (ESC to unlock)</div>
@@ -29,6 +38,9 @@
         <div id="map">
             <!-- Center Landmark at World (0,0) -->
             <div id="center-marker">+ WORLD CENTER (0, 0)</div>
+            
+            <!-- Container for Collectible Dots -->
+            <div id="dots-container"></div>
         </div>
     </div>
 
